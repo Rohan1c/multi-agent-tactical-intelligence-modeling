@@ -40,3 +40,31 @@ df["G/Sh"] = df["G/Sh"].fillna(0)
 
 print("\nRemaining Missing Values:")
 print(df.isnull().sum())
+
+from sklearn.preprocessing import StandardScaler
+
+numerical_features = [
+    "Age",
+    "MP",
+    "Starts",
+    "Min",
+    "Gls",
+    "Ast",
+    "G+A",
+    "CrdY",
+    "Sh",
+    "SoT",
+    "Sh/90",
+    "SoT/90",
+    "G/Sh",
+    "Crs",
+    "TklW",
+    "Int",
+    "Fld"
+]
+
+scaler = StandardScaler()
+
+scaled_data = scaler.fit_transform(df[numerical_features])
+
+print(scaled_data[:5])

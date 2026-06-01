@@ -1,11 +1,15 @@
 import sys
 import numpy as np
 import pandas as pd
+
 from sklearn.metrics.pairwise import cosine_similarity
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
-df = pd.read_csv("data/players_data_light.csv")
+df = pd.read_csv("data/players_data-2025_2026.csv")
+
+df = df.drop_duplicates(subset=["Player"])
+df = df.reset_index(drop=True)
 
 embeddings = np.load("models/latent_embeddings.npy")
 
@@ -28,9 +32,11 @@ similar_scores = []
 
 for idx in same_position_indices:
 
-    similarity = similarity_matrix[player_index][idx]
+    if idx != player_index:
 
-    similar_scores.append((idx, similarity))
+        score = similarity_matrix[player_index][idx]
+
+        similar_scores.append((idx, score))
 
 similar_scores = sorted(
     similar_scores,
@@ -38,23 +44,12 @@ similar_scores = sorted(
     reverse=True
 )
 
+top_players = similar_scores[:5]
+
 print(f"\nTop players similar to {player_name}:\n")
 
-count = 0
+for idx, score in top_players:
 
-for idx, score in similar_scores:
-
-    similar_player = df.iloc[idx]["Player"]
-
-    if similar_player != player_name:
-
-        print(
-            similar_player,
-            "-> Similarity:",
-            round(score, 3)
-        )
-
-        count += 1
-
-    if count == 5:
-        break
+    print(
+        f"{df.iloc[idx]['Player']} -> Similarity: {score:.3f}"
+    )

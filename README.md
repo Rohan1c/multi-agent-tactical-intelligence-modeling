@@ -1,5 +1,5 @@
 
-# Football Representation Learning
+# Latent Tactical Intelligence and Chemistry Optimization Framework for Football
 
 ANN-based football analytics project using representation learning and latent embeddings to identify stylistically similar football players.
 

@@ -258,15 +258,11 @@ def candidate_score(
 
     return (
 
-        0.50 * chemistry
-
+        0.70 * chemistry
         +
-
-        0.25 * quality
-
+        0.15 * quality
         +
-
-        0.25 * specialization
+        0.15 * specialization
 
     )
     

@@ -5,13 +5,12 @@ from compatibility_engine import (
     compatibility_score
 )
 
-from role_engine import (
-    get_primary_role,
-    get_role_scores
+from prototype_role_engine import (
+    get_primary_role
 )
 
 # =====================================
-# PLAYER SEARCH
+# FIND PLAYER
 # =====================================
 
 def find_player(player_name):
@@ -40,6 +39,23 @@ def find_player(player_name):
 
 
 # =====================================
+# MIDFIELD ROLES
+# =====================================
+
+MIDFIELD_ROLES = [
+
+    "Creative Playmaker",
+
+    "Deep Playmaker",
+
+    "Ball Winner",
+
+    "Box-to-Box"
+
+]
+
+
+# =====================================
 # MIDFIELD TEMPLATES
 # =====================================
 
@@ -48,13 +64,15 @@ MIDFIELD_TEMPLATES = {
     "Creative Playmaker": [
 
         "Ball Winner",
-        "Box-to-Box"
+        "Box-to-Box",
+        "Deep Playmaker"
 
     ],
 
     "Deep Playmaker": [
 
         "Creative Playmaker",
+        "Ball Winner",
         "Box-to-Box"
 
     ],
@@ -62,6 +80,7 @@ MIDFIELD_TEMPLATES = {
     "Ball Winner": [
 
         "Creative Playmaker",
+        "Deep Playmaker",
         "Box-to-Box"
 
     ],
@@ -69,51 +88,252 @@ MIDFIELD_TEMPLATES = {
     "Box-to-Box": [
 
         "Creative Playmaker",
-        "Ball Winner"
+        "Ball Winner",
+        "Deep Playmaker"
 
     ]
+
 }
 
 
 # =====================================
-# ROLE SPECIALIZATION
+# GET MIDFIELDERS
 # =====================================
 
-def role_specialization(idx):
+def get_midfield_players():
 
-    player = df.iloc[idx]
+    players = []
 
-    role = get_primary_role(
-        player
+    for idx in range(len(df)):
+
+        pos = str(
+            df.iloc[idx]["Position"]
+        )
+
+        if pos in [
+
+            "CDM",
+            "CM",
+            "CAM"
+
+        ]:
+
+            players.append(idx)
+
+    return players
+
+
+# =====================================
+# GET PLAYERS BY ROLE
+# =====================================
+
+def get_players_by_role(role):
+
+    players = []
+
+    for idx in get_midfield_players():
+
+        player = df.iloc[idx]
+
+        player_role = get_primary_role(
+            player
+        )
+
+        if player_role == role:
+
+            players.append(idx)
+
+    return players
+
+
+# =====================================
+# PAIR CHEMISTRY
+# =====================================
+
+def pair_score(
+    idx1,
+    idx2
+):
+
+    return compatibility_score(
+        idx1,
+        idx2
     )
 
-    scores = get_role_scores(
-        player
+
+# =====================================
+# ROLE FIT
+# =====================================
+
+def role_fit(
+    anchor_role,
+    role
+):
+
+    wanted_roles = MIDFIELD_TEMPLATES.get(
+        anchor_role,
+        []
     )
 
-    role_score = scores[
-        role
-    ]
+    if role in wanted_roles:
+        return 1.0
 
-    total_score = sum(
-        scores.values()
-    )
+    if role == anchor_role:
+        return 0.50
 
-    if total_score == 0:
-        return 0
+    if role in MIDFIELD_ROLES:
+        return 0.25
+
+    return 0
+
+
+# =====================================
+# TRIO CHEMISTRY
+# =====================================
+
+def trio_chemistry(
+    a,
+    b,
+    c
+):
 
     return (
-        role_score
-        /
-        total_score
+
+        pair_score(a, b)
+
+        +
+
+        pair_score(a, c)
+
+        +
+
+        pair_score(b, c)
+
+    ) / 3
+
+
+# =====================================
+# TACTICAL BALANCE
+# =====================================
+
+def tactical_balance(
+    anchor_idx,
+    idx1,
+    idx2
+):
+
+    anchor_role = get_primary_role(
+        df.iloc[anchor_idx]
+    )
+
+    role1 = get_primary_role(
+        df.iloc[idx1]
+    )
+
+    role2 = get_primary_role(
+        df.iloc[idx2]
+    )
+
+    role_score = (
+
+        role_fit(
+            anchor_role,
+            role1
+        )
+
+        +
+
+        role_fit(
+            anchor_role,
+            role2
+        )
+
+    ) / 2
+
+    chemistry = trio_chemistry(
+
+        anchor_idx,
+
+        idx1,
+
+        idx2
+
+    )
+
+    return (
+
+        0.60 * role_score
+
+        +
+
+        0.40 * chemistry
+
     )
 
 
 # =====================================
-# MIDFIELD QUALITY
+# BUILD CANDIDATE POOLS
 # =====================================
 
-def midfield_quality(idx):
+def build_candidate_pools(
+    anchor_idx
+):
+
+    anchor_role = get_primary_role(
+        df.iloc[anchor_idx]
+    )
+
+    candidate_pools = {}
+
+    for role in MIDFIELD_ROLES:
+
+        role_players = get_players_by_role(
+            role
+        )
+
+        scored = []
+
+        for idx in role_players:
+
+            if idx == anchor_idx:
+                continue
+
+            chemistry = pair_score(
+                anchor_idx,
+                idx
+            )
+
+            scored.append(
+                (
+                    idx,
+                    chemistry
+                )
+            )
+
+        scored.sort(
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        candidate_pools[role] = [
+
+            idx
+
+            for idx, score
+
+            in scored[:100]
+
+        ]
+
+    return candidate_pools
+
+# =====================================
+# MIDFIELD QUALITY BONUS
+# =====================================
+
+def midfield_quality_bonus(
+    idx
+):
 
     player = df.iloc[idx]
 
@@ -133,51 +353,11 @@ def midfield_quality(idx):
 
             +
 
-            player["Ast_norm"]
+            player["Ball Control"]
 
             +
 
-            player["G+A_norm"]
-
-        ) / 400
-
-    elif role == "Ball Winner":
-
-        return (
-
-            player["TklW_norm"]
-
-            +
-
-            player["Int_norm"]
-
-            +
-
-            player["Aggression"]
-
-            +
-
-            player["Defending"]
-
-        ) / 400
-
-    elif role == "Box-to-Box":
-
-        return (
-
-            player["Stamina"]
-
-            +
-
-            player["Pace"]
-
-            +
-
-            player["Physicality"]
-
-            +
-
-            player["On-Off_norm"]
+            player["Dribbling"]
 
         ) / 400
 
@@ -185,251 +365,63 @@ def midfield_quality(idx):
 
         return (
 
-            player["Passing"]
-
-            +
-
             player["Vision"]
 
             +
 
-            player["Compl_norm"]
+            player["Passing"]
 
             +
 
-            player["PPM_norm"]
+            player["Ball Control"]
+
+            +
+
+            player["Crossing"]
+
+        ) / 400
+
+    elif role == "Ball Winner":
+
+        return (
+
+            player["Defending"]
+
+            +
+
+            player["Interceptions"]
+
+            +
+
+            player["Standing Tackle"]
+
+            +
+
+            player["Aggression"]
+
+        ) / 400
+
+    elif role == "Box-to-Box":
+
+        return (
+
+            player["Physicality"]
+
+            +
+
+            player["Pace"]
+
+            +
+
+            player["Passing"]
+
+            +
+
+            player["Dribbling"]
 
         ) / 400
 
     return 0
-
-
-# =====================================
-# ROLE FIT
-# =====================================
-
-def role_fit(
-
-    anchor_role,
-    candidate_role
-
-):
-
-    required_roles = MIDFIELD_TEMPLATES.get(
-
-        anchor_role,
-
-        []
-
-    )
-
-    if candidate_role in required_roles:
-        return 1
-
-    return 0
-
-
-# =====================================
-# SMART CANDIDATE SCORE
-# =====================================
-
-def candidate_score(
-
-    anchor_idx,
-    candidate_idx
-
-):
-
-    chemistry = compatibility_score(
-
-        anchor_idx,
-
-        candidate_idx
-
-    )
-
-    quality = midfield_quality(
-        candidate_idx
-    )
-
-    specialization = role_specialization(
-        candidate_idx
-    )
-
-    return (
-
-        0.70 * chemistry
-        +
-        0.15 * quality
-        +
-        0.15 * specialization
-
-    )
-    
-    # =====================================
-# BUILD CANDIDATE POOLS
-# =====================================
-
-def build_candidate_pools(
-    anchor_idx
-):
-
-    anchor_role = get_primary_role(
-        df.iloc[anchor_idx]
-    )
-
-    required_roles = MIDFIELD_TEMPLATES.get(
-        anchor_role,
-        []
-    )
-
-    candidate_pools = {}
-
-    for role in required_roles:
-
-        candidates = []
-
-        for idx in range(len(df)):
-
-            if idx == anchor_idx:
-                continue
-
-            player = df.iloc[idx]
-
-            pos = str(
-                player["Pos"]
-            )
-
-            if "MF" not in pos:
-                continue
-
-            candidate_role = get_primary_role(
-                player
-            )
-
-            if candidate_role != role:
-                continue
-
-            score = candidate_score(
-
-                anchor_idx,
-
-                idx
-
-            )
-
-            candidates.append(
-
-                (
-                    idx,
-                    score
-                )
-
-            )
-
-        candidates.sort(
-
-            key=lambda x: x[1],
-
-            reverse=True
-
-        )
-
-        candidate_pools[role] = [
-
-            idx
-
-            for idx, score
-
-            in candidates[:20]
-
-        ]
-
-    return candidate_pools
-
-
-# =====================================
-# TRIO CHEMISTRY
-# =====================================
-
-def trio_chemistry(
-
-    a,
-    b,
-    c
-
-):
-
-    return (
-
-        compatibility_score(a, b)
-
-        +
-
-        compatibility_score(a, c)
-
-        +
-
-        compatibility_score(b, c)
-
-    ) / 3
-
-
-# =====================================
-# FINAL TACTICAL SCORE
-# =====================================
-
-def tactical_score(
-
-    anchor_idx,
-    idx1,
-    idx2
-
-):
-
-    chemistry = trio_chemistry(
-
-        anchor_idx,
-
-        idx1,
-
-        idx2
-
-    )
-
-    quality = (
-
-        midfield_quality(idx1)
-
-        +
-
-        midfield_quality(idx2)
-
-    ) / 2
-
-    specialization = (
-
-        role_specialization(idx1)
-
-        +
-
-        role_specialization(idx2)
-
-    ) / 2
-
-    return (
-
-        0.50 * chemistry
-
-        +
-
-        0.30 * quality
-
-        +
-
-        0.20 * specialization
-
-    )
 
 
 # =====================================
@@ -444,63 +436,125 @@ def best_trio(
         df.iloc[anchor_idx]
     )
 
-    if anchor_role not in MIDFIELD_TEMPLATES:
+    if anchor_role not in MIDFIELD_ROLES:
 
         return None, 0
 
-    pools = build_candidate_pools(
+    candidate_pools = build_candidate_pools(
         anchor_idx
     )
 
-    role1 = MIDFIELD_TEMPLATES[
-        anchor_role
-    ][0]
-
-    role2 = MIDFIELD_TEMPLATES[
-        anchor_role
-    ][1]
-
-    pool1 = pools[role1]
-    pool2 = pools[role2]
-
     best_score = -1
 
-    best_team = None
+    best_trio_result = None
 
-    for p1 in pool1:
+    for role_a in MIDFIELD_ROLES:
 
-        for p2 in pool2:
+        for role_b in MIDFIELD_ROLES:
 
-            if p1 == p2:
+            if role_a == role_b:
                 continue
 
-            score = tactical_score(
+            pool_a = candidate_pools[
+                role_a
+            ]
 
-                anchor_idx,
+            pool_b = candidate_pools[
+                role_b
+            ]
 
-                p1,
+            for idx_a in pool_a:
 
-                p2
+                for idx_b in pool_b:
 
-            )
+                    if idx_a == idx_b:
+                        continue
 
-            if score > best_score:
+                    if idx_a == anchor_idx:
+                        continue
 
-                best_score = score
+                    if idx_b == anchor_idx:
+                        continue
 
-                best_team = (
+                    tactical = tactical_balance(
 
-                    anchor_idx,
+                        anchor_idx,
 
-                    p1,
+                        idx_a,
 
-                    p2
+                        idx_b
 
-                )
+                    )
+
+                    quality = (
+
+                        midfield_quality_bonus(
+                            idx_a
+                        )
+
+                        +
+
+                        midfield_quality_bonus(
+                            idx_b
+                        )
+
+                    ) / 2
+
+                    role_a_fit = role_fit(
+
+                        anchor_role,
+
+                        get_primary_role(
+                            df.iloc[idx_a]
+                        )
+
+                    )
+
+                    role_b_fit = role_fit(
+
+                        anchor_role,
+
+                        get_primary_role(
+                            df.iloc[idx_b]
+                        )
+
+                    )
+
+                    final_score = (
+
+                        0.50 * tactical
+
+                        +
+
+                        0.20 * quality
+
+                        +
+
+                        0.15 * role_a_fit
+
+                        +
+
+                        0.15 * role_b_fit
+
+                    )
+
+                    if final_score > best_score:
+
+                        best_score = final_score
+
+                        best_trio_result = (
+
+                            anchor_idx,
+
+                            idx_a,
+
+                            idx_b
+
+                        )
 
     return (
 
-        best_team,
+        best_trio_result,
 
         best_score
 
@@ -508,7 +562,7 @@ def best_trio(
 
 
 # =====================================
-# PRINT RESULT
+# PRINT TRIO
 # =====================================
 
 def print_trio(
@@ -540,7 +594,7 @@ def print_trio(
 
             f"{player['Player']} "
 
-            f"| {player['Pos']} "
+            f"| {player['Position']} "
 
             f"| {role}"
 

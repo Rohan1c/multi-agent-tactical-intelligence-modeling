@@ -9,8 +9,9 @@ from recruitment_assistant import (
     get_partners
 )
 
-from role_engine import (
-    get_primary_role
+from prototype_role_engine import (
+    get_primary_role,
+    get_role_scores
 )
 
 from squad_builder import (

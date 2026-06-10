@@ -1,55 +1,75 @@
-# ⚽ Football Intelligence Framework
+# ⚽ FootballIQ: Player Analytics and Recruitment Intelligence System
 
-An AI-powered football analytics framework that combines representation learning, player similarity analysis, chemistry optimization, graph-based squad intelligence, and Grey Wolf Optimization (GWO) for scouting, recruitment, and tactical decision-making.
+An AI-powered football intelligence framework that combines deep-learning player embeddings, role archetype discovery, similarity analysis, transfer recommendations, compatibility modeling, squad optimization, and tactical lineup generation using FBref statistics and FIFA attributes.
 
 ---
 
 ## 🚀 Project Overview
 
-Traditional player comparison systems rely heavily on raw statistics and subjective scouting. This project leverages deep learning and optimization techniques to learn hidden football representations and provide intelligent recommendations for:
+FootballIQ is a football analytics and scouting platform designed to assist clubs, analysts, recruiters, and enthusiasts in evaluating players, discovering replacements, building squads, and analyzing tactical fit.
 
-- Player Similarity Analysis
-- Tactical Archetype Discovery
-- Chemistry Optimization
-- Squad Intelligence Analysis
-- Scouting & Recruitment Support
-- AI-Driven Squad Building
+The system leverages:
 
----
+- Autoencoder-based representation learning
+- Latent player embeddings
+- Role archetype modeling
+- Similarity learning
+- Compatibility analysis
+- Transfer recommendation systems
+- Tactical squad optimization
 
-## 🎯 Objectives
-
-- Learn latent football representations using ANN Autoencoders
-- Identify stylistically similar players
-- Discover hidden tactical archetypes
-- Model player chemistry and compatibility
-- Build interaction-aware football graphs
-- Optimize feature importance using Grey Wolf Optimization (GWO)
-- Assist recruitment and squad-building decisions
+The project integrates statistical performance data from FBref with FIFA player attributes to generate meaningful football intelligence.
 
 ---
 
-## 📊 Dataset
+## 🏗️ System Architecture
 
-### FBRef Statistics Dataset
+```text
+Dataset
+│
+├── FBref Statistics
+├── FIFA Attributes
+│
+▼
 
-Contains performance metrics such as:
+Data Preprocessing
+│
+▼
+
+Autoencoder Training
+│
+▼
+
+Latent Embeddings
+│
+├── Similarity Engine
+├── Compatibility Engine
+├── Recruitment Assistant
+├── Transfer Engine
+├── Role Archetype Engine
+├── Squad Builder
+├── Starting XI Builder
+└── Football Intelligence Reports
+```
+
+---
+
+# 📊 Dataset
+
+The project combines:
+
+### FBref Statistics
 
 - Goals
 - Assists
-- xG
-- xA
-- Progressive Carries
-- Progressive Passes
-- Key Passes
-- Tackles
-- Interceptions
-- Dribbles
-- Minutes Played
+- Expected Goals (xG)
+- Expected Assists (xA)
+- Passing Metrics
+- Defensive Actions
+- Progressive Actions
+- Playing Time
 
-### FC 26 Attributes Dataset
-
-Contains player ratings such as:
+### FIFA Attributes
 
 - Pace
 - Shooting
@@ -58,191 +78,309 @@ Contains player ratings such as:
 - Defending
 - Physicality
 - Vision
+- Finishing
 - Ball Control
-- Composure
-- Reactions
-- Agility
+- Aggression
+- Strength
+- Positioning
+- Interceptions
+- Tackling
 
-### Hybrid Dataset
-
-The project merges both datasets to create a unified football intelligence dataset containing statistical, technical, physical, and tactical player information.
-
----
-
-## 🏗️ Methodology
-
-### 1. Data Collection
-
-- FBRef Statistics Dataset
-- FC 26 Attributes Dataset
-
-### 2. Data Preprocessing
-
-- Data Cleaning
-- Missing Value Handling
-- Feature Selection
-- Feature Scaling
-- Dataset Preparation
-
-### 3. Representation Learning
-
-An ANN Autoencoder learns compressed latent player embeddings that capture hidden football characteristics and playstyles.
-
-### 4. Player Similarity Engine
-
-Cosine Similarity is applied on latent embeddings to identify players with similar football profiles.
-
-### 5. Tactical Archetype Discovery
-
-Player embeddings are clustered to discover hidden tactical roles and archetypes.
-
-### 6. Chemistry Optimization
-
-Player compatibility is calculated using:
-
-- Embedding Similarity
-- Positional Compatibility
-- Tactical Complementarity
-- Role Balance
-
-### 7. Interaction Graph
-
-- Players → Nodes
-- Chemistry Scores → Weighted Edges
-
-The graph models tactical relationships and squad-level interactions.
-
-### 8. Grey Wolf Optimization (GWO)
-
-Used to:
-
-- Optimize feature weights
-- Improve chemistry scoring
-- Reduce manual bias
-- Enhance recommendation quality
-
----
-
-## 🔄 System Flow
+### Dataset Size
 
 ```text
-FBRef Statistics Dataset
-           +
-FC 26 Attributes Dataset
-           ↓
-      Data Merging
-           ↓
-    Data Preprocessing
-           ↓
- ANN Autoencoder Training
-           ↓
-   Latent Player Embeddings
-           ↓
- ┌─────────────────────┬─────────────────────┬─────────────────────┐
- │                     │                     │
- ↓                     ↓                     ↓
-Player Similarity   Tactical Archetype   Chemistry Optimization
-    Engine             Discovery
-                                           ↓
-                                  Interaction Graph
-                                           ↓
-                              Squad Intelligence Analysis
-                                           ↓
-                        Grey Wolf Optimization (GWO)
-                                           ↓
-                              Final Recommendations
+~2057 Players
 ```
 
 ---
 
-## 🧠 Key Features
+# 🧠 Machine Learning Pipeline
 
-### Player Similarity Analysis
+## Autoencoder
 
-- Similar Player Discovery
-- Replacement Suggestions
-- Successor Identification
+The core representation learning model uses an autoencoder to compress player feature vectors into latent embeddings.
 
-### Tactical Intelligence
+### Purpose
 
-- Latent Football Identity Learning
-- Tactical Archetype Discovery
-- Playstyle Analysis
+- Capture player style
+- Reduce dimensionality
+- Learn hidden football characteristics
+- Enable similarity search
 
-### Chemistry Optimization
+### Output
 
-- Compatibility Scoring
-- Best Partnerships
-- Tactical Fit Analysis
+```text
+latent_embeddings.npy
+```
 
-### Squad Intelligence
+---
 
-- Graph-Based Team Analysis
-- Role Coverage Analysis
-- Balanced Squad Recommendations
+# 🔍 Similarity Engine
+
+Finds players with similar profiles based on latent embeddings.
+
+### Example
+
+Input:
+
+```text
+Pedri
+```
+
+Output:
+
+```text
+1. Frenkie de Jong
+2. Martin Ødegaard
+3. Nicolò Barella
+4. Warren Zaïre-Emery
+5. Federico Valverde
+```
+
+---
+
+# 🎭 Role Archetype Engine
+
+Classifies players into football archetypes using prototype-based role discovery.
+
+### Supported Roles
+
+#### Midfield
+
+- Deep Playmaker
+- Creative Playmaker
+- Ball Winner
+- Box-to-Box
+
+#### Attack
+
+- Wide Winger
+- Creative Winger
+- Inside Forward
+- False 9
+- Poacher
+- Target Forward
+
+#### Defense
+
+- Ball Playing Defender
+- Defensive Defender
+
+### Example
+
+Input:
+
+```text
+Rodri
+```
+
+Output:
+
+```text
+Primary Role:
+Deep Playmaker
+```
+
+---
+
+# 🤝 Compatibility Engine
+
+Measures how well two players complement each other.
+
+Factors considered:
+
+- Latent embedding similarity
+- Role fit
+- Positional compatibility
+- Tactical balance
+
+### Example
+
+```text
+Pedri + Rodri
+Compatibility Score: 0.94
+```
+
+---
+
+# 🔄 Transfer Recommendation Engine
+
+Identifies realistic replacements for a player.
+
+Scoring Components:
+
+```text
+40% Embedding Similarity
+30% Role Match
+20% Position Match
+10% Age Profile
+```
+
+### Example
+
+Input:
+
+```text
+Pedri
+```
+
+Output:
+
+```text
+1. João Neves
+2. Gavi
+3. Warren Zaïre-Emery
+4. Kobbie Mainoo
+5. Andrey Santos
+```
+
+---
+
+# 🏗️ Squad Builder
+
+Constructs balanced midfield combinations based on:
+
+- Compatibility
+- Tactical roles
+- Positional fit
+- Chemistry
+
+### Example
+
+```text
+Pedri
+Martin Ødegaard
+Joshua Kimmich
+
+Tactical Score: 0.946
+```
+
+---
+
+# ⚽ Starting XI Builder
+
+Generates a complete tactical lineup around a selected player.
+
+### Formation
+
+```text
+4-3-3
+```
+
+### Example Output
+
+```text
+GK  Jordan Pickford
+
+RB  Konrad Laimer
+CB  Jan Paul van Hecke
+CB  Marcos Senesi
+LB  Marc Cucurella
+
+CDM Moisés Caicedo
+CM  Dominik Szoboszlai
+CM  Enzo Le Fée
+
+RW  Ridle Baku
+ST  Florian Sotoca
+LW  Sergio Gómez
+```
+
+---
+
+# 📈 Football Intelligence Reports
+
+Aggregates insights from all modules.
+
+### Includes
+
+- Role Analysis
+- Similar Players
+- Compatible Partners
+- Transfer Replacements
+- Tactical Recommendations
+- Squad Construction Suggestions
+
+---
+
+# 🛠️ Tech Stack
+
+### Languages
+
+- Python
+
+### Machine Learning
+
+- TensorFlow / Keras
+- NumPy
+- Pandas
+- Scikit-Learn
+
+### Visualization
+
+- NetworkX
+- Matplotlib
 
 ### Optimization
 
-- Feature Weight Optimization
-- Chemistry Weight Optimization
-- Improved Recommendation Quality
-
----
-
-## 📈 Expected Outputs
-
-- Top Similar Players
-- Tactical Archetype Clusters
-- Chemistry Scores
-- Interaction Graph Visualization
-- Squad Building Recommendations
-- Optimized Feature Weights
-- Recruitment Insights
-
----
-
-## 🛠️ Tech Stack
-
-- Python
-- Pandas
-- NumPy
-- Scikit-Learn
-- TensorFlow / Keras
-- NetworkX
-- Matplotlib
 - Grey Wolf Optimization (GWO)
-- VS Code
 
 ---
 
-## 🔬 Research Contribution
+# 📂 Project Structure
 
-This project adapts interaction-aware representation learning concepts from multi-agent intelligence systems into football analytics by combining:
-
-- Latent Player Embeddings
-- Player Similarity Analysis
-- Chemistry Optimization
-- Interaction Graph Modeling
-- Evolutionary Feature Optimization
-
-The framework aims to bridge the gap between traditional football statistics and AI-driven tactical intelligence.
+```text
+FootballIQ
+│
+├── data/
+│
+├── models/
+│   ├── autoencoder.py
+│   ├── similarity_engine.py
+│   ├── compatibility_engine.py
+│   ├── prototype_role_engine.py
+│   ├── recruitment_assistant.py
+│   ├── transfer_engine.py
+│   ├── squad_builder.py
+│   ├── starting_xi_builder.py
+│   ├── football_intelligence_report.py
+│   └── latent_embeddings.npy
+│
+├── data_preprocessing.py
+├── dataset_merge.py
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-## 🔮 Future Enhancements
+# 🎯 Future Improvements
 
 - Streamlit Dashboard
-- Interactive Graph Visualization
-- Team-Level Tactical Optimization
-- Multi-Season Player Evolution Analysis
-- Transfer Recommendation Engine
-- Graph Neural Network (GNN) Extension
+- Interactive Player Search
+- Formation Optimization
+- Transfer Budget Constraints
+- Market Value Prediction
+- Role Discovery using Unsupervised Learning
+- Explainable AI for Recommendations
+- Multi-Season Player Development Tracking
 
 ---
 
-## 👨‍💻 Author
+# 📜 License
+
+This project is released under the MIT License.
+
+---
+
+# 👨‍💻 Author
 
 **Rohan Srinivas Ponnana**
 
-B.Tech Artificial Intelligence & Machine Learning  
-VIT Chennai
+Artificial Intelligence & Machine Learning Student
+
+Football Analytics • Machine Learning • Recruitment Intelligence • Representation Learning
+
+---
+
+⭐ If you found this project interesting, consider starring the repository.

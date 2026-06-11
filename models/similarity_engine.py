@@ -52,40 +52,63 @@ def get_similar_players(player_name, top_n=5):
         matching_players = df[
             df["Player"]
             .str.lower()
-            .str.contains(player_name.lower(), na=False)
+            .str.contains(
+                player_name.lower(),
+                na=False
+            )
         ]
 
     if matching_players.empty:
 
         print("Player not found!")
 
-        return
+        return []
 
     player_index = matching_players.index[0]
 
-    matched_name = df.iloc[player_index]["Player"]
+    matched_name = df.iloc[
+        player_index
+    ]["Player"]
 
-    print(f"\nMatched Player: {matched_name}")
+    print(
+        f"\nMatched Player: {matched_name}"
+    )
 
-    player_position = df.iloc[player_index]["Pos"]
+    player_position = df.iloc[
+        player_index
+    ]["Pos"]
 
     weighted_embeddings = apply_position_weights(
+
         player_position,
+
         embeddings
+
     )
 
     distance_matrix = euclidean_distances(
-    weighted_embeddings
+
+        weighted_embeddings
+
     )
 
-    max_dist = np.max(distance_matrix)
+    max_dist = np.max(
+        distance_matrix
+    )
 
     similarity_matrix = (
-        1 - distance_matrix / max_dist
+
+        1
+        -
+        distance_matrix
+        /
+        max_dist
+
     )
 
     same_position_indices = df[
-        df["Pos"].str.contains(
+        df["Pos"]
+        .str.contains(
             player_position.split(",")[0],
             na=False
         )
@@ -97,27 +120,64 @@ def get_similar_players(player_name, top_n=5):
 
         if idx != player_index:
 
-            score = similarity_matrix[player_index][idx]
+            score = similarity_matrix[
+                player_index
+            ][idx]
 
-            similar_scores.append((idx, score))
+            similar_scores.append(
+
+                (
+                    idx,
+                    score
+                )
+
+            )
 
     similar_scores = sorted(
+
         similar_scores,
+
         key=lambda x: x[1],
+
         reverse=True
+
     )
 
     top_players = similar_scores[:top_n]
 
-    print(f"\nTop players similar to {matched_name}:\n")
+    results = []
+
+    print(
+        f"\nTop players similar to {matched_name}:\n"
+    )
 
     for idx, score in top_players:
 
+        player = df.iloc[idx]["Player"]
+
         print(
-            f"{df.iloc[idx]['Player']} -> Similarity: {score:.3f}"
+
+            f"{player} -> Similarity: {score:.3f}"
+
         )
 
+        results.append(
 
-player_input = input("Enter player name: ")
+            (
+                player,
+                float(score)
+            )
 
-get_similar_players(player_input)
+        )
+
+    return results
+
+if __name__ == "__main__":
+
+    player_input = input(
+        "Enter player name: "
+    )
+
+    get_similar_players(
+        player_input
+    )
